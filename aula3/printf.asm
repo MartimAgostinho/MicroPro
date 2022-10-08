@@ -3,7 +3,7 @@
 data segment
     ; add your data here!
     pkey db "press any key...$"
-    str db "PIXAAAAA pixa",0dH,0aH,0
+    str db "PIXAAAAA pixa dsa  ",0dH,0aH,0
 ends
 
 stack segment
@@ -20,8 +20,16 @@ start:
     ; add your code here
     
     mov si,offset str
-    mov bl, 4
+    mov bl, 0
     call printf
+    
+    mov si,offset str
+    mov bl,' '
+    call del_char
+    mov bl,0
+    mov si,offset str
+    call printf
+    
     
             
     lea dx, pkey
@@ -140,6 +148,67 @@ printf_min_max proc
         
         ret
 endp
+
+del_char proc;si= offset str;bl=char
+        
+        push dx ;dl, guarda o char
+        push di ;ptr antes  ' '
+        push bx ;ptr depois ' ' 
+        mov di,si
+        
+        lp1_del_char:
+            
+            mov dl,byte ptr [si];guardar o char
+            or dl,dl
+            jz end_dlch         ;procurar fim da str
+            
+            cmp dl,bl
+            jne endif_dlch      ;procurar o char em bl
+                inc si
+                jmp lp1_del_char    
+            
+            endif_dlch:
+            
+            mov [di],dl         ;da shift a str
+            
+            inc di
+            inc si
+            jmp lp1_del_char
+    
+        end_dlch:
+        
+        mov [di],0
+        pop ax
+        pop dx
+        ret
+    endp
+
+    
+    str_int proc; si = offset str,Ax = resultado 
+        
+        push dx ;inicializar as variaveis
+        push bx
+        mov ax,0
+        mov dh,0
+        mov bh,10
+        
+        str_intLp:
+            
+            mov dl,byte ptr [si];char 
+            or dl,dl
+            jz str_int_end      ;para no fim da string
+            sub dl,'0'          ;passar para inteiro
+            
+            mul bh              ;multiplicar o resultado por 10
+            add ax,dx           ;adicionar o numero novo
+            inc si
+            jmp str_intLp
+            
+        str_int_end:
+        pop bx
+        pop dx
+        ret   
+    endp
         
 ends
 
