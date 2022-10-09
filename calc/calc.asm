@@ -44,6 +44,7 @@ start:
         push dx ;dl, guarda o char
         push di ;ptr antes  ' '
         push bx ;ptr depois ' ' 
+        push si
         mov di,si
         
         lp1_del_char:
@@ -68,7 +69,9 @@ start:
         end_dlch:
         
         mov [di],0
-        pop ax
+        pop si
+        pop bx
+        pop di
         pop dx
         ret
     endp            
