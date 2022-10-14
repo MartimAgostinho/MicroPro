@@ -3,8 +3,9 @@
 data segment
     ; add your data here!
     pkey db "press any key...$"
-    str db "e isto [e um teste!e" ,0
-    str2 db 15 dup(?)
+    str db "RWARpenizaa" ,0
+    str2 db "notstr",0
+    str3 db 40 dup(?)
 ends
 
 stack segment
@@ -20,14 +21,18 @@ start:
 
     ; add your code here
     
-    mov bl,'e'
-    mov bh,'P'
-    mov di,offset str
-    call swtch_char
-    mov si,offset str
-    mov bl,0
-    call printf
     
+    mov si,offset str
+    mov bl,4
+    call printf
+     
+    mov si,offset str2
+    mov di,offset str
+    call strcpy 
+    
+    mov si,offset str
+    mov bl,4
+    call printf
             
     lea dx, pkey
     mov ah, 9
@@ -112,6 +117,7 @@ start:
     cnt_str proc
             
         push cx
+        push di
             
         mov al,0
         mov cx,-1
@@ -121,7 +127,8 @@ start:
                       
         mov ax,-1          
         sub ax, cx  ; ax = -(Cx + 1) 
-            
+        
+        pop di    
         pop Cx
         ret
     endp
@@ -198,8 +205,111 @@ start:
         ret
         
     endp
+        
+        
+    ;si = str1
+    ;di = str2
+    ;resultado "str2""str1"
+    app_str proc
+        
+        push ax
+        push cx
+        
+        call cnt_str
+        add di , ax ;aponta para o fim da str
+        dec di
+        
+        mov cx ,di
+        mov di,si    ;guardar di
+        
+        call cnt_str ;conta char da str
+        
+        mov di , cx
+        mov cx , ax    
+        
+        cld 
+        repne movsb ;mov o char todos
+        
+        pop cx
+        pop ax
+        ret
+        
+    endp
+        
+    ;si = str1
+    ;di = str2
+    ;se str1 == str2 flag de zero = 1
+    str_cmp proc
+    
+        push ax
+        push cx
+           
+        call cnt_str     ;conta os char da str
+        mov cx,ax
+        
+        cld
+        repe cmpsb       ;se str1 == str2 Flag de zero == 1
+        
+        end_strcmp:   
+        pop cx
+        pop ax
+        ret
+         
+         
+    endp
     
     
+    ;si = str1
+    ;di = destino
+    ;escreve char a char str1 em di
+    strcpy proc
+        
+        push ax
+        push cx
+             
+        mov cx,di
+        mov di,si
+        
+        call cnt_str
+        mov di,cx       ;numero de char na str [si] em cx
+        mov cx,ax
+        
+        cld
+        rep movsb
+        
+        pop cx
+        pop ax
+        
+    endp
+    
+    
+    ;TODO REFAZER
+    ;si=inicio ax = quantos char salta
+    ; exemplo 1+2+3+4 onde si aponta para 2 e ax = 2
+    ; fica 1+2+4
+    str_shift proc
+ 
+        push cx
+        push si
+        
+        inc si
+
+        lp1_strshft:
+                    
+            add si,ax
+            mov ch,[si]
+            sub si,ax
+            mov [si],ch
+            inc si
+            or ch,ch
+        
+        jnz lp1_strshft
+        
+        pop si
+        pop cx
+        ret
+        
+    endp
     
 printf proc
     
