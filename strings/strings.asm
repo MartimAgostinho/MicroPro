@@ -44,7 +44,9 @@ start:
     
     mov ax, 4c00h ; exit to operating system.
     int 21h
-    
+     
+ ;------------STRINGS------------;
+
     ;Si = inicio do numero na str
     ;Cl = num de char =< 5
     ;Ax = resultado
@@ -311,45 +313,45 @@ start:
         
     endp
     
-printf proc
+    printf proc
     
-    or bl,bl
-    jz print_0
-    
-    cmp bl,1
-    je print_min
-    
-    cmp bl,2
-    je print_max
-    
-    cmp bl,4
-    je print_enter
-    
-    print_max:
-        mov bl,'a'
-        mov bh,'z'
-        mov cl, 'A'-'a'
-        call printf_min_max
-        ret
-    
-    print_min:
-        mov bl,'A'
-        mov bh,'Z'
-        mov cl,'a'-'A'
-        call printf_min_max
-        ret
-    
-    print_0:
-        call printf_norm
-        ret
-    
-    print_enter:
-        call printf_norm
-        mov al,0dh
-        call co
-        mov al,0ah
-        call co
-        ret
+        or bl,bl
+        jz print_0
+        
+        cmp bl,1
+        je print_min
+        
+        cmp bl,2
+        je print_max
+        
+        cmp bl,4
+        je print_enter
+        
+        print_max:
+            mov bl,'a'
+            mov bh,'z'
+            mov cl, 'A'-'a'
+            call printf_min_max
+            ret
+        
+        print_min:
+            mov bl,'A'
+            mov bh,'Z'
+            mov cl,'a'-'A'
+            call printf_min_max
+            ret
+        
+        print_0:
+            call printf_norm
+            ret
+        
+        print_enter:
+            call printf_norm
+            mov al,0dh
+            call co
+            mov al,0ah
+            call co
+            ret
     
     printf endp
 
@@ -363,7 +365,7 @@ printf proc
             jmp L1
         fimprtstr: ret
     
-endp
+    endp
 
 ;*****************************************************************
 ; co - caracter output
@@ -372,17 +374,17 @@ endp
 ; output - nenhum
 ; destroi - nada
 ;*****************************************************************
-co proc
-    push ax
-    push dx
-    mov ah,02H
-    mov dl,al
-    int 21H
-    pop dx
-    pop ax
-    ret
-co endp
-ends
+    co proc
+        push ax
+        push dx
+        mov ah,02H
+        mov dl,al
+        int 21H
+        pop dx
+        pop ax
+        ret
+    co endp
+
 
 
     printf_min_max proc
@@ -408,7 +410,9 @@ ends
         pop si
         
         ret
-endp
+    endp
+
+;------------STRINGS------------;
         
 ends
 
