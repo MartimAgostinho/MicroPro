@@ -3,7 +3,7 @@
 data segment
     ; add your data here!
     pkey db "press any key...$"
-    str db "RWARpenizaa" ,0
+    str db "aRWaRpaaenizaa" ,0
     str2 db "notstr",0
     str3 db 40 dup(?)
 ends
@@ -26,9 +26,9 @@ start:
     mov bl,4
     call printf
      
-    mov si,offset str2
-    mov di,offset str
-    call strcpy 
+    mov si,offset str
+    mov bl,'a'
+    call del_char 
     
     mov si,offset str
     mov bl,4
@@ -157,10 +157,7 @@ start:
             
             endif_dlch:
             
-            mov [di],dl         ;da shift a str
-            
-            inc di
-            inc si
+            movsb
             jmp lp1_del_char
     
         end_dlch:
