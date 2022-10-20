@@ -22,15 +22,13 @@ start:
     ; add your code here
     
     
-    mov si,offset str
-    mov bl,4
-    call printf
-     
-    mov si,offset str
-    mov bl,'a'
-    call del_char 
+    mov ax,1234
+    mov di,offset str3
+    mov bl,0
+    call int_str
     
-    mov si,offset str
+    
+    mov si,offset str3
     mov bl,4
     call printf
             
@@ -84,30 +82,50 @@ start:
          
     ;Di = inicio str destino
     ;Ax = num
-    ;bl = 0,para terminar str com 0
+    ;bh = 0,para terminar str com 0
     int_str proc
                  
         push cx
         push dx
-         
+        push ax
+        push bx
+        
+        xor bx,bx 
         mov cx,10
         
+        cnt_intsrt:
+            
+            inc bl
+            xor dx,dx        ;dx tem de ser 0
+            div cx
+            or ax,ax
+            
+        jnz cnt_intsrt 
+        
+        dec di
+        add di,bx
+        pop bx
+        
+        or bl,bl
+        jnz end_intstr
+            inc di
+            mov [di],0;terminar a string    
+            dec di
+        end_intstr:
+            
+        pop ax
         lp1_intstr:
             
-            mov dx,0        ;dx tem de ser 0
+            xor dx,dx        ;dx tem de ser 0
             div cx
             add dl,'0'      ;dl tem o char menos significativo
             mov [di], dl    ;adiciona a string      
                         
-            inc di          ;prox posicao
+            dec di          ;prox posicao
             or ax,ax
             jnz lp1_intstr 
         
-        or bl,bl
-        jnz end_intstr
-            mov [di],0;terminar a string    
-        end_intstr:
-        
+        ;pop bx
         pop dx
         pop cx
         ret

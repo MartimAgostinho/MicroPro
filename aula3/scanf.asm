@@ -44,7 +44,15 @@ start:
             int 21h  ;ler 1 char
           
             cmp al,0dh      ;para parar no enter
-            je scanf_Endwhile1 
+            je scanf_Endwhile1
+            
+            cmp al,08h          ;backspace
+            jne endif_scanf 
+                        
+                dec di
+                jmp scanf_Bgwhile1
+            
+            endif_scanf:
   
             mov [di], al    ;adiciona o char na memoria
                     
@@ -58,9 +66,7 @@ start:
         pop Bx
         ret
     endp
-    
-
-     
+      
 ends
 
 end start ; set entry point and stop the assembler.
