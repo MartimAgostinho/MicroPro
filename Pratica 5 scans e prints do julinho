@@ -1,0 +1,369 @@
+; multisegment executable file template.
+
+data segment
+    str db 20  
+    bem_vindo_str db "Bem vindo/a a nossa calculadora!",0
+    introduza_1operando_str db "Introduza o primeiro operando:",0 
+    
+    op1 db 1 
+    op2 db 1   
+    result db 1
+    
+    plus_str db " + " 
+    introduza_2operando_str db "Introduza o segundo operando:",0    
+    result_str db "o resultado de ",0     
+    str_obrigado db "Obrigado.",0
+    result__str db " e: ",0
+        
+                                               
+     
+ends                                            
+
+stack segment
+    dw 128 dup(0)
+ends
+code segment
+    start:
+          
+        ; set segment registers:
+        mov ax, data
+        mov ds, ax
+        mov es, ax
+      
+        mov bx, 04h     ;comportamento da string  00h, 01h, 02h, 03h  
+        mov ax, 00h     ; tipo de tratamento dados: string - 00h numeros sem sinal - 01h 
+               
+              
+        mov si, offset bem_vindo_str
+        call printf           ;imprimir bem_vindo_str
+
+
+       
+
+        mov si, offset introduza_1operando_str
+        call printf           ;imprimir introduza_1operando_str
+        
+        mov bl, 01h     ;comportamento:  00h (string) , 01h (inteiro)  
+           
+        mov di, offset op1       
+        call scanf   ; scan primeiro operando
+     
+        mov bx, 04h     ;comportamento da string  00h, 01h, 02h, 04h  
+        mov ax, 00h     ; tipo de tratamento dados: string - 00h numeros sem sinal - 01h 
+       
+        mov si, offset introduza_2operando_str
+        call printf   ; ;imprimir introduza_2operando_str  
+        
+        
+        
+        
+        mov bl, 01h     ;comportamento:  00h (string) , 01h (inteiro) 
+        
+        mov di, offset op2       
+        call scanf   ; scan segundo operando
+        
+        
+        
+        
+        mov di, offset result
+        call calc
+        
+        
+        mov bx, 04h     ;comportamento da string  00h, 01h, 02h, 04h  
+        mov ax, 00h     ; tipo de tratamento dados: string - 00h numeros sem sinal - 01h 
+        
+        
+        mov si, offset result_str
+        call printf     ;imprime result_str  
+        
+        mov ax, 01h  ;tratamento do inteiros para string
+        
+        mov si, offset op1
+        call printf     ;imprime primeiro operando
+        
+        mov bx, 04h     ;comportamento da string  00h, 01h, 02h, 04h  
+        mov ax, 00h     ; tipo de tratamento dados: string - 00h numeros sem sinal - 01h
+        
+        mov si, offset plus_str
+        call printf     ;imprime primeiro operando
+        
+        mov ax, 01h  ;tratamento do inteiros para string
+        
+        mov si, offset op2
+        call printf     ;imprime segundo operando 
+        
+        mov bx, 04h     ;comportamento da string  00h, 01h, 02h, 04h  
+        mov ax, 00h     ; tipo de tratamento dados: string - 00h numeros sem sinal - 01h
+        
+        mov si, offset result__str
+        call printf     ;imprime result:str
+        
+        mov ax, 01h  ;tratamento do inteiros para string
+        
+        mov si, offset result
+        call printf     ;imprime primeiro operando                                    
+                                           
+                                             
+        mov ax,4c00h ; terminate program
+        int 21h
+        
+        
+;*****************************************************************
+; printf - string output
+; descricao: rotina que faz o output de uma string NULL terminated para o ecra
+; input - si=deslocamento da string a escrever desde o in�cio do segmento de dados 
+; output - nenhum
+; destroi - al, si
+;*****************************************************************   
+
+printf proc
+    
+    push ax
+    push si
+    push bx
+    push dx 
+    push cx
+    
+    
+    
+    L2: 	
+    
+    cmp ax,01H
+    je AX01h 
+    
+    
+    mov al,byte ptr [si]
+    or al,al
+    jz fimprtstr
+    call co
+    inc si
+    jmp L2 ;loop 2
+    fimprtstr:
+    
+    cmp bx,04H
+    jne L04H    
+    
+    mov ah, 02H
+    mov dl, 0DH ;meter enter em dl (estou a estragar o valor de dl mas nao faz mal)          
+    int 21H
+    mov dl, 0AH ;meter enter em dl (estou a estragar o valor de dl mas nao faz mal)          
+    int 21H 
+    
+    jmp L04H
+    
+    AX01h:
+    
+    mov ax ,[si] 
+    
+    L4:
+    
+    mov bx, 10   
+        
+    div bx     ;mete o resultado de dl com al em ax  
+    
+    
+    cmp al,0 ;fim da divisao  
+    je L04H
+    
+    add ah, 48  ; converte o inteiro em 
+       
+    mov al,ah
+
+    call co    
+    
+    jmp L4 
+    
+    L04H:
+    
+    pop cx
+    pop dx
+    pop bx
+    pop si
+    pop ax
+    
+    ret
+printf endp
+
+;*****************************************************************
+; scanf - string input
+; descricao: rotina que faz o input de carateres inseridos para uma string NULL terminated
+; input - nenhum
+; output - si = deslocamento da string des do inicio do segmento de dados 
+; destroi - al, si
+;*****************************************************************   
+
+scanf proc
+    
+    push ax 
+    push cx
+    push di
+    push dx
+    
+    mov ax, 0
+    
+    L3:
+    call ci 
+     
+    
+    cmp bl, 01h ; comportamento para inteiros 
+    je BL01h
+    
+    cmp ax, 19 
+    je fimscnstr
+    cmp cl,0DH 
+    je fimscnstr
+   
+   
+    mov [di], cl   ;;mover carater em al em string offset di
+    inc di 
+    
+    inc ax
+    
+    BL01h:  
+      
+    cmp cl,0DH  ;verifica se o imput e um enter
+    
+    je fimNum   ;finaliza o numero 
+    
+    
+    sub cl, 48 ; converte o carater em inteiro   
+    
+    
+    
+    mov dl, 10 ; vai controlar as ordem de grandeza do valor inserido
+    mul dl     ;mete o resultado de dl com al em ax
+    
+    add al,cl   ;mete em al o valor final do numero
+    
+    
+    ;jc overflow
+    
+    
+    
+    jmp L3 ;loop 3 
+    
+    
+    fimscnstr: 
+    
+    mov [di],0    ;;mete 0 no fim da string
+    
+    fimNum:
+    
+    mov [di], al ;offset di (op1 ou op2)
+    
+    pop dx
+    pop di 
+    pop cx
+    pop ax
+             
+    ret
+
+scanf endp
+
+;*****************************************************************
+; co - caracter output 
+; descricao: rotina que faz o output de um caracter para o ecra
+; input - al= caracter a escrever
+; output - nenhum
+; destroi - nada
+;*****************************************************************  
+
+co proc
+    push bx
+    push ax
+    push dx 
+    
+    
+    
+    mov ah,02H     ;para o interrupt
+    mov dl,al  
+    
+    
+    cmp bx, 00h    ;compara com o comportamento da impressao
+    je L00h
+    cmp bx, 04h    ;compara com o comportamento da impressao
+    je L00h
+    
+    cmp bx, 01h
+    je L01h
+    cmp bx, 02h
+    je L02h 
+   
+
+    L02h:
+    
+    cmp dl, 'a'
+    jb L00h 
+    
+    sub dl, 'a'-'A' ;tabela ascii              ;coloca em maiscula
+    jmp L00h
+    
+    
+    L01h:
+    cmp dl, 'a'
+    jae L00h 
+    
+    add dl, 'a'-'A' ;tabela ascii              ;coloca em minuscula
+    
+    L00h:      ;tratamento normal da string
+    
+    
+    int 21H
+    
+    pop dx
+    pop ax
+    pop bx
+    ret
+co endp
+ends
+ 
+;*****************************************************************
+; ci - caracter imput
+; descricao: rotina que faz o imput de um caracter para uma string
+; input - nenhum
+; output - al = valor lido do imput
+; destroi - nada
+;***************************************************************** 
+
+ci proc
+    
+    push ax
+    
+    mov ah,07h 
+    int 21H
+    mov cl,al
+    
+    pop ax
+    
+    ret   
+ci endp
+ends
+;*****************************************************************
+; calculo 
+; descricao: faz continhas
+; input - nehum 
+; output - resultado da operacao
+; 
+;*****************************************************************  
+calc proc
+    
+    push ax
+    push bx
+    
+    mov al,op1
+    mov bl,op2
+    
+    add al, bl
+    
+    mov [di], al ;meter resultado em resut
+    
+    
+    pop bx
+    pop ax
+    ret     
+calc endp
+ends
+
+
+end start ; set entry point and stop the assembler.
+
